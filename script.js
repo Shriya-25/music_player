@@ -18,6 +18,19 @@ const visuals = [
   'assets/9.png',
 ];
 
+/* ─── Random Background (independent of playlist order) ─── */
+let lastVisualIndex = -1; // track last shown so we never repeat consecutively
+
+function pickRandomVisualIndex() {
+  if (visuals.length === 1) return 0;
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * visuals.length);
+  } while (idx === lastVisualIndex);
+  lastVisualIndex = idx;
+  return idx;
+}
+
 /* ─── Playlist ID ─── */
 const PLAYLIST_ID = 'PLWdGqtkoX2CHhhMu6YS6xl6LsmUMW1IYl';
 
@@ -97,14 +110,13 @@ function preloadVisuals() {
   });
 }
 
-function setBackground(index, instant = false) {
-  const safeIndex = ((index % visuals.length) + visuals.length) % visuals.length;
-  const src = visuals[safeIndex];
+// setBackground now takes a visual src directly (random pick done by caller)
+function setBackground(src, instant = false) {
+  if (!src) return;
 
   if (els.songThumb) els.songThumb.src = src;
 
-  // Determine which layer is currently "active" (visible)
-  const activeBgEl  = state.activeBg === 'A' ? els.bgA : els.bgB;
+  const activeBgEl   = state.activeBg === 'A' ? els.bgA : els.bgB;
   const inactiveBgEl = state.activeBg === 'A' ? els.bgB : els.bgA;
 
   if (instant) {
@@ -116,14 +128,12 @@ function setBackground(index, instant = false) {
     return;
   }
 
-  // Preload next image then crossfade
+  // Preload then crossfade
   const img = new Image();
   img.onload = () => {
     inactiveBgEl.style.backgroundImage = `url('${src}')`;
     inactiveBgEl.style.opacity = '0';
     inactiveBgEl.classList.remove('active');
-
-    // Small timeout so browser has painted the background
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         inactiveBgEl.style.opacity = '1';
@@ -134,15 +144,18 @@ function setBackground(index, instant = false) {
       });
     });
   };
-  img.onerror = () => {
-    // If image fails, just keep current background
-    console.warn('Failed to load visual:', src);
-  };
+  img.onerror = () => console.warn('Failed to load visual:', src);
   img.src = src;
 }
 
-// Set initial background
-setBackground(0, true);
+// Call when a new song starts — picks a random (non-consecutive) background
+function setRandomBackground(instant = false) {
+  const idx = pickRandomVisualIndex();
+  setBackground(visuals[idx], instant);
+}
+
+// Set initial random background
+setRandomBackground(true);
 preloadVisuals();
 
 /* ════════════════════════════════════════════════════════════════
@@ -550,12 +563,17 @@ function onPlayerStateChange(event) {
       break;
 
     case YTState.ENDED:
+      // Auto-advance to next track in the playlist
       setPlayingUI(false);
       stopProgressTracking();
+      updateProgressUI(0, 0); // reset display
+      try {
+        ytPlayer.nextVideo();
+      } catch (e) {}
       break;
 
     case YTState.BUFFERING:
-      // Keep current UI, player is buffering
+      // Keep current UI while buffering
       break;
 
     case YTState.CUED:
@@ -594,13 +612,17 @@ function syncWithPlayerState() {
     const idx = ytPlayer.getPlaylistIndex();
     if (idx >= 0 && idx !== state.currentPlaylistIndex) {
       state.currentPlaylistIndex = idx;
-      setBackground(idx);
+      // New song → pick a new random background
+      setRandomBackground();
       if (state.drawerOpen) buildDrawerList();
     }
 
     const dur = ytPlayer.getDuration();
     state.duration = dur || 0;
+    // Update duration display immediately (current time stays until interval ticks)
+    els.timeDuration.textContent = formatTime(state.duration);
 
+    captureCurrentTitle();
     updateSongInfo(state.currentPlaylistIndex);
   } catch (e) {
     // Player might not be fully ready
@@ -619,7 +641,7 @@ function startProgressTracking() {
       state.duration = dur;
       updateProgressUI(cur, dur);
     } catch (e) {}
-  }, 800);
+  }, 500); // 500ms for smoother updates
 }
 
 function stopProgressTracking() {
@@ -696,24 +718,31 @@ els.playBtn.addEventListener('click', () => {
 
 els.nextBtn.addEventListener('click', () => {
   if (!ytPlayer) return;
-  ytPlayer.nextVideo();
-  // Brief delay then sync (gives YT time to update index)
-  setTimeout(syncWithPlayerState, 600);
+  // Reset progress immediately so UI doesn't hang on old time
+  updateProgressUI(0, 0);
+  stopProgressTracking();
+  try {
+    ytPlayer.nextVideo();
+  } catch (e) {}
+  // syncWithPlayerState fires via onPlayerStateChange → PLAYING
 });
 
 els.prevBtn.addEventListener('click', () => {
   if (!ytPlayer) return;
-  // If more than 3 seconds in, restart current; else go prev
   try {
     const cur = ytPlayer.getCurrentTime() || 0;
     if (cur > 3) {
+      // Restart current song from beginning
       ytPlayer.seekTo(0, true);
+      updateProgressUI(0, state.duration);
     } else {
+      // Go to previous song
+      updateProgressUI(0, 0);
+      stopProgressTracking();
       ytPlayer.previousVideo();
-      setTimeout(syncWithPlayerState, 600);
     }
   } catch (e) {
-    ytPlayer.previousVideo();
+    try { ytPlayer.previousVideo(); } catch (err) {}
   }
 });
 
@@ -778,12 +807,13 @@ setInterval(() => {
     const idx = ytPlayer.getPlaylistIndex();
     if (idx >= 0 && idx !== state.currentPlaylistIndex) {
       state.currentPlaylistIndex = idx;
-      setBackground(idx);
+      // Song changed → new random background
+      setRandomBackground();
       updateSongInfo(idx);
       captureCurrentTitle();
       if (state.drawerOpen) buildDrawerList();
     }
-    // Also capture the current title if we haven't yet
+    // Capture title for playlist drawer as it loads
     if (state.isPlaying) captureCurrentTitle();
   } catch (e) {}
 }, 1000);
