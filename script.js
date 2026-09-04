@@ -68,6 +68,7 @@ const els = {
   particleCanvas:   document.getElementById('particleCanvas'),
   dayDisplay:       document.getElementById('dayDisplay'),
   fullscreenBtn:    document.getElementById('fullscreenBtn'),
+  songThumb:        document.getElementById('songThumb'),
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -99,6 +100,8 @@ function preloadVisuals() {
 function setBackground(index, instant = false) {
   const safeIndex = ((index % visuals.length) + visuals.length) % visuals.length;
   const src = visuals[safeIndex];
+
+  if (els.songThumb) els.songThumb.src = src;
 
   // Determine which layer is currently "active" (visible)
   const activeBgEl  = state.activeBg === 'A' ? els.bgA : els.bgB;

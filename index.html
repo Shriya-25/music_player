@@ -64,86 +64,76 @@
        MAIN BRAND TITLE
   ═══════════════════════════════════════════ -->
   <main>
-    <!-- Brand placed in scene upper area -->
+    <!-- Brand placed in scene top center area -->
     <div class="brand-scene">
       <h1 class="brand-title" id="brandTitle">राधे राधे</h1>
       <p class="brand-subtitle">A Krishna Music Experience</p>
     </div>
 
     <!-- ═══════════════════════════════════════════
-         MUSIC PLAYER CARD
+         MUSIC PLAYER PILL CARD
     ═══════════════════════════════════════════ -->
-    <div class="player-card" id="playerCard" role="region" aria-label="Music player">
+    <div class="player-pill" id="playerCard" role="region" aria-label="Music player">
 
-      <!-- Song Info -->
-      <div class="song-info">
-        <div class="song-meta">
-          <div class="now-playing-dot" id="nowPlayingDot"></div>
-          <div class="song-texts">
-            <p class="song-title" id="songTitle">राधे राधे</p>
-            <p class="song-artist" id="songArtist">Krishna Music Experience</p>
-          </div>
-        </div>
+      <!-- Left: Circular Album Artwork -->
+      <div class="song-thumb-wrap">
+        <img class="song-thumb-img" id="songThumb" src="assets/1.png" alt="Current visual" />
       </div>
 
-      <!-- Progress Bar -->
-      <div class="progress-section">
+      <!-- Center: Song Details + Progress + Time -->
+      <div class="song-details-center">
+        <div class="song-text-group">
+          <span class="song-title" id="songTitle">राधे राधे</span>
+          <span class="song-artist" id="songArtist">Krishna Music Experience</span>
+        </div>
+
         <div class="progress-track" id="progressTrack" role="slider" aria-label="Song progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
           <div class="progress-fill" id="progressFill"></div>
           <div class="progress-thumb" id="progressThumb"></div>
         </div>
-        <div class="progress-times">
-          <span class="time-current" id="timeCurrent">0:00</span>
-          <span class="time-duration" id="timeDuration">0:00</span>
+
+        <div class="time-display-inline">
+          <span id="timeCurrent">0:00</span> <span class="time-sep">/</span> <span id="timeDuration">0:00</span>
         </div>
       </div>
 
-      <!-- Controls -->
-      <div class="controls-row">
+      <!-- Right: Controls (Prev, Play/Pause, Next + Mute) -->
+      <div class="controls-right">
+        <button class="ctrl-btn vol-btn" id="muteBtn" aria-label="Mute" title="Mute/Unmute">
+          <svg id="volIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+        </button>
 
-        <!-- Volume -->
-        <div class="volume-group">
-          <button class="ctrl-btn vol-btn" id="muteBtn" aria-label="Mute" title="Mute/Unmute">
-            <svg id="volIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            </svg>
-          </button>
-          <div class="vol-slider-wrap">
-            <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="70" aria-label="Volume" />
-          </div>
+        <div class="vol-popover hidden" id="volPopover">
+          <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="70" aria-label="Volume" />
         </div>
 
-        <!-- Playback Buttons -->
-        <div class="playback-btns">
-          <button class="ctrl-btn prev-btn" id="prevBtn" aria-label="Previous song" title="Previous">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-            </svg>
-          </button>
+        <button class="ctrl-btn prev-btn" id="prevBtn" aria-label="Previous song" title="Previous">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+          </svg>
+        </button>
 
-          <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play" title="Play / Pause">
-            <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="hidden">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-            </svg>
-          </button>
+        <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play" title="Play / Pause">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="hidden">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
 
-          <button class="ctrl-btn next-btn" id="nextBtn" aria-label="Next song" title="Next">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 18l8.5-6L6 6v12zm2.5-6l5.5 3.9V8.1l-5.5 3.9zM16 6h2v12h-2z"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Spacer so controls center -->
-        <div class="vol-spacer" aria-hidden="true"></div>
+        <button class="ctrl-btn next-btn" id="nextBtn" aria-label="Next song" title="Next">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 18l8.5-6L6 6v12zm2.5-6l5.5 3.9V8.1l-5.5 3.9zM16 6h2v12h-2z"/>
+          </svg>
+        </button>
       </div>
 
-    </div><!-- /player-card -->
+    </div><!-- /player-pill -->
 
   </main>
 
