@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="राधे राधे — A cinematic Krishna music experience. Listen to devotional bhajans with beautiful Radha-Krishna artwork." />
+  <title>राधे राधे — A Krishna Music Experience</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Yatra+One&family=Tiro+Devanagari+Hindi:ital@0;1&family=Noto+Serif+Devanagari:wght@300;400;600;700&family=Cinzel:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       BACKGROUND LAYERS
+  ═══════════════════════════════════════════ -->
+  <div class="bg-layer" id="bgA"></div>
+  <div class="bg-layer" id="bgB"></div>
+
+  <!-- Subtle gradient overlays for UI readability -->
+  <div class="overlay-top"></div>
+  <div class="overlay-bottom"></div>
+
+  <!-- ═══════════════════════════════════════════
+       PARTICLES (subtle ambient dots)
+  ═══════════════════════════════════════════ -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- ═══════════════════════════════════════════
+       TOP BAR
+  ═══════════════════════════════════════════ -->
+  <header class="top-bar" role="banner">
+    <div class="top-left">
+      <span class="clock" id="clockDisplay" aria-label="Current time" aria-live="polite">--:-- --</span>
+      <span class="top-divider" aria-hidden="true">|</span>
+      <span class="top-day" id="dayDisplay" aria-label="Day">---</span>
+    </div>
+    <div class="top-right">
+      <span class="github-handle" aria-label="GitHub">@Shriya-25</span>
+      <button class="fullscreen-btn" id="fullscreenBtn" aria-label="Toggle fullscreen" title="Fullscreen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+          <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+          <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+          <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        </svg>
+      </button>
+      <button class="playlist-toggle-btn" id="playlistToggleBtn" aria-label="Open playlist" title="Playlist">
+        <svg class="icon-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <circle cx="3" cy="12" r="1.5"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN BRAND TITLE
+  ═══════════════════════════════════════════ -->
+  <main>
+    <!-- Brand placed in scene upper area -->
+    <div class="brand-scene">
+      <h1 class="brand-title" id="brandTitle">राधे राधे</h1>
+      <p class="brand-subtitle">A Krishna Music Experience</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         MUSIC PLAYER CARD
+    ═══════════════════════════════════════════ -->
+    <div class="player-card" id="playerCard" role="region" aria-label="Music player">
+
+      <!-- Song Info -->
+      <div class="song-info">
+        <div class="song-meta">
+          <div class="now-playing-dot" id="nowPlayingDot"></div>
+          <div class="song-texts">
+            <p class="song-title" id="songTitle">राधे राधे</p>
+            <p class="song-artist" id="songArtist">Krishna Music Experience</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-section">
+        <div class="progress-track" id="progressTrack" role="slider" aria-label="Song progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="progress-fill" id="progressFill"></div>
+          <div class="progress-thumb" id="progressThumb"></div>
+        </div>
+        <div class="progress-times">
+          <span class="time-current" id="timeCurrent">0:00</span>
+          <span class="time-duration" id="timeDuration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-row">
+
+        <!-- Volume -->
+        <div class="volume-group">
+          <button class="ctrl-btn vol-btn" id="muteBtn" aria-label="Mute" title="Mute/Unmute">
+            <svg id="volIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          </button>
+          <div class="vol-slider-wrap">
+            <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="70" aria-label="Volume" />
+          </div>
+        </div>
+
+        <!-- Playback Buttons -->
+        <div class="playback-btns">
+          <button class="ctrl-btn prev-btn" id="prevBtn" aria-label="Previous song" title="Previous">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+
+          <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play" title="Play / Pause">
+            <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="hidden">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+
+          <button class="ctrl-btn next-btn" id="nextBtn" aria-label="Next song" title="Next">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M6 18l8.5-6L6 6v12zm2.5-6l5.5 3.9V8.1l-5.5 3.9zM16 6h2v12h-2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Spacer so controls center -->
+        <div class="vol-spacer" aria-hidden="true"></div>
+      </div>
+
+    </div><!-- /player-card -->
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       PLAYLIST DRAWER (P1)
+  ═══════════════════════════════════════════ -->
+  <aside class="playlist-drawer" id="playlistDrawer" role="complementary" aria-label="Playlist" aria-hidden="true">
+    <div class="drawer-header">
+      <span class="drawer-title">Playlist</span>
+      <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close playlist">✕</button>
+    </div>
+    <div class="drawer-list" id="drawerList" role="list">
+      <!-- dynamically populated -->
+    </div>
+  </aside>
+
+  <!-- Drawer backdrop -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ═══════════════════════════════════════════
+       HIDDEN YOUTUBE PLAYER CONTAINER
+  ═══════════════════════════════════════════ -->
+  <div id="ytPlayerContainer" aria-hidden="true">
+    <div id="ytPlayer"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       ERROR / STATUS TOAST
+  ═══════════════════════════════════════════ -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="script.js"></script>
+</body>
+</html>
