@@ -834,22 +834,22 @@ main {
 }
 
 /* ─── Hidden YouTube Container ─── */
-/* Must stay in-viewport (even at 1px) so browsers don't throttle the audio stream */
+/* Must maintain at least 200x200 for YouTube IFrame API compliance while remaining invisible */
 #ytPlayerContainer {
   position: fixed;
   bottom: 0;
   right: 0;
-  width: 1px;
-  height: 1px;
+  width: 200px;
+  height: 200px;
   opacity: 0.001;
   pointer-events: none;
-  z-index: 1;
-  overflow: visible;
+  z-index: -1;
+  overflow: hidden;
 }
 #ytPlayerContainer iframe,
 #ytPlayer {
-  width: 1px !important;
-  height: 1px !important;
+  width: 200px !important;
+  height: 200px !important;
 }
 
 /* ─── Toast / Error ─── */

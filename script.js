@@ -286,16 +286,29 @@ function updateVolumeIcon() {
 ════════════════════════════════════════════════════════════════ */
 function setPlayingUI(playing) {
   state.isPlaying = playing;
-  if (playing) {
-    els.playIcon.classList.add('hidden');
-    els.pauseIcon.classList.remove('hidden');
-    els.playBtn.setAttribute('aria-label', 'Pause');
-    els.nowPlayingDot.classList.remove('paused');
-  } else {
-    els.playIcon.classList.remove('hidden');
-    els.pauseIcon.classList.add('hidden');
-    els.playBtn.setAttribute('aria-label', 'Play');
-    els.nowPlayingDot.classList.add('paused');
+  if (els.playIcon) {
+    if (playing) {
+      els.playIcon.classList.add('hidden');
+    } else {
+      els.playIcon.classList.remove('hidden');
+    }
+  }
+  if (els.pauseIcon) {
+    if (playing) {
+      els.pauseIcon.classList.remove('hidden');
+    } else {
+      els.pauseIcon.classList.add('hidden');
+    }
+  }
+  if (els.playBtn) {
+    els.playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+  }
+  if (els.nowPlayingDot) {
+    if (playing) {
+      els.nowPlayingDot.classList.remove('paused');
+    } else {
+      els.nowPlayingDot.classList.add('paused');
+    }
   }
 }
 
