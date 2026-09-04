@@ -836,12 +836,14 @@ main {
 /* ─── Hidden YouTube Container ─── */
 #ytPlayerContainer {
   position: fixed;
-  bottom: -9999px;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  bottom: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  opacity: 0.001;
   pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
 }
 
 /* ─── Toast / Error ─── */

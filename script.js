@@ -468,34 +468,56 @@ let ytPlayer = null;
 let progressInterval = null;
 let pendingPlay = false; // user pressed play before player is ready
 
+function initYouTubePlayer() {
+  if (ytPlayer) return;
+  
+  let playerOrigin = window.location.origin;
+  if (!playerOrigin || playerOrigin === 'null' || window.location.protocol === 'file:') {
+    playerOrigin = undefined;
+  }
+
+  const pVars = {
+    listType:       'playlist',
+    list:           PLAYLIST_ID,
+    autoplay:       0,
+    controls:       0,
+    modestbranding: 1,
+    rel:            0,
+    enablejsapi:    1,
+    playsinline:    1,
+  };
+  if (playerOrigin) pVars.origin = playerOrigin;
+
+  try {
+    ytPlayer = new YT.Player('ytPlayer', {
+      height: '200',
+      width: '200',
+      playerVars: pVars,
+      events: {
+        onReady:       onPlayerReady,
+        onStateChange: onPlayerStateChange,
+        onError:       onPlayerError,
+        onApiChange:   onApiChange,
+      },
+    });
+  } catch (e) {
+    console.warn('Failed to init YT.Player:', e);
+  }
+}
+
 // Called by YouTube API when script loads
-window.onYouTubeIframeAPIReady = function () {
-  ytPlayer = new YT.Player('ytPlayer', {
-    height: '1',
-    width: '1',
-    playerVars: {
-      listType:    'playlist',
-      list:        PLAYLIST_ID,
-      autoplay:    0,
-      controls:    0,
-      modestbranding: 1,
-      rel:         0,
-      enablejsapi: 1,
-      origin:      window.location.origin || '',
-      playsinline: 1,
-    },
-    events: {
-      onReady:       onPlayerReady,
-      onStateChange: onPlayerStateChange,
-      onError:       onPlayerError,
-      onApiChange:   onApiChange,
-    },
-  });
-};
+window.onYouTubeIframeAPIReady = initYouTubePlayer;
+
+// Fallback if API already loaded before script executed
+if (window.YT && window.YT.Player) {
+  initYouTubePlayer();
+}
 
 function onPlayerReady(event) {
   state.ytReady = true;
-  ytPlayer.setVolume(state.volume);
+  if (ytPlayer && ytPlayer.setVolume) {
+    ytPlayer.setVolume(state.volume);
+  }
 
   // Try to get playlist titles
   loadPlaylistTitles();
@@ -505,7 +527,10 @@ function onPlayerReady(event) {
 
   if (pendingPlay) {
     pendingPlay = false;
-    ytPlayer.playVideo();
+    try {
+      if (ytPlayer.unMute) ytPlayer.unMute();
+      ytPlayer.playVideo();
+    } catch (e) {}
   }
 }
 
@@ -543,15 +568,17 @@ function onPlayerStateChange(event) {
 }
 
 function onPlayerError(event) {
-  const codes = {
-    2:   'Invalid playlist request.',
-    5:   'HTML5 player error.',
-    100: 'Video not found.',
-    101: 'Video embedding not allowed.',
-    150: 'Video embedding not allowed.',
-  };
-  const msg = codes[event.data] || 'Music is taking a moment to load. Please try again.';
-  showToast(msg, 5000);
+  console.warn('YouTube error code:', event.data);
+  if (event.data === 101 || event.data === 150 || event.data === 100 || event.data === 2) {
+    showToast('Skipping unavailable track…', 2000);
+    if (ytPlayer && typeof ytPlayer.nextVideo === 'function') {
+      setTimeout(() => {
+        try { ytPlayer.nextVideo(); } catch (e) {}
+      }, 600);
+    }
+  } else {
+    showToast('Music player ready. Click play to listen.', 4000);
+  }
   setPlayingUI(false);
 }
 
@@ -642,15 +669,28 @@ function captureCurrentTitle() {
 els.playBtn.addEventListener('click', () => {
   if (!ytPlayer || !state.ytReady) {
     pendingPlay = true;
-    showToast('Loading player…');
+    showToast('Initializing music player…');
+    if (window.YT && window.YT.Player && !ytPlayer) {
+      initYouTubePlayer();
+    }
     return;
   }
 
-  const playerState = ytPlayer.getPlayerState();
-  if (playerState === YT.PlayerState.PLAYING) {
-    ytPlayer.pauseVideo();
-  } else {
-    ytPlayer.playVideo();
+  try {
+    if (ytPlayer.isMuted && ytPlayer.isMuted()) {
+      ytPlayer.unMute();
+      ytPlayer.setVolume(state.volume || 70);
+    }
+
+    const playerState = ytPlayer.getPlayerState();
+    if (playerState === YT.PlayerState.PLAYING) {
+      ytPlayer.pauseVideo();
+    } else {
+      ytPlayer.playVideo();
+    }
+  } catch (e) {
+    console.warn('Error toggling play:', e);
+    try { ytPlayer.playVideo(); } catch (err) {}
   }
 });
 
