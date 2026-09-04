@@ -350,7 +350,7 @@ main {
   background: #ffffff;
   border-radius: 99px;
   width: 0%;
-  transition: width 0.8s linear;
+  /* No CSS transition — updated every animation frame for real-time tracking */
 }
 
 .progress-thumb {
@@ -361,7 +361,7 @@ main {
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
   left: 0%;
   transform: translateX(-50%);
-  transition: left 0.8s linear;
+  /* No CSS transition — updated every animation frame for real-time tracking */
   pointer-events: none;
 }
 
@@ -834,16 +834,22 @@ main {
 }
 
 /* ─── Hidden YouTube Container ─── */
+/* Must stay in-viewport (even at 1px) so browsers don't throttle the audio stream */
 #ytPlayerContainer {
   position: fixed;
   bottom: 0;
   right: 0;
-  width: 200px;
-  height: 200px;
+  width: 1px;
+  height: 1px;
   opacity: 0.001;
   pointer-events: none;
-  z-index: -1;
-  overflow: hidden;
+  z-index: 1;
+  overflow: visible;
+}
+#ytPlayerContainer iframe,
+#ytPlayer {
+  width: 1px !important;
+  height: 1px !important;
 }
 
 /* ─── Toast / Error ─── */

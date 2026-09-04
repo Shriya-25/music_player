@@ -478,7 +478,7 @@ function showToast(msg, duration = 3000) {
    YOUTUBE IFRAME PLAYER API
 ════════════════════════════════════════════════════════════════ */
 let ytPlayer = null;
-let progressInterval = null;
+let rafId = null;        // requestAnimationFrame id for progress tracking
 let pendingPlay = false; // user pressed play before player is ready
 
 function initYouTubePlayer() {
@@ -503,8 +503,8 @@ function initYouTubePlayer() {
 
   try {
     ytPlayer = new YT.Player('ytPlayer', {
-      height: '200',
-      width: '200',
+      height: '1',
+      width: '1',
       playerVars: pVars,
       events: {
         onReady:       onPlayerReady,
@@ -629,25 +629,38 @@ function syncWithPlayerState() {
   }
 }
 
-/* ─── Progress Tracking ─── */
+/* ─── Progress Tracking via requestAnimationFrame ───
+   Polls getCurrentTime() every animation frame (~16ms) for
+   real-time, frame-accurate slider movement. */
 function startProgressTracking() {
   stopProgressTracking();
-  progressInterval = setInterval(() => {
-    if (!ytPlayer || state.progressDragging) return;
-    try {
-      const cur = ytPlayer.getCurrentTime() || 0;
-      const dur = ytPlayer.getDuration() || 0;
-      state.currentTime = cur;
-      state.duration = dur;
-      updateProgressUI(cur, dur);
-    } catch (e) {}
-  }, 500); // 500ms for smoother updates
+
+  function tick() {
+    if (state.progressDragging) {
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+    if (ytPlayer) {
+      try {
+        const cur = ytPlayer.getCurrentTime() || 0;
+        const dur = ytPlayer.getDuration() || 0;
+        if (dur > 0) {
+          state.currentTime = cur;
+          state.duration = dur;
+          updateProgressUI(cur, dur);
+        }
+      } catch (e) {}
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  rafId = requestAnimationFrame(tick);
 }
 
 function stopProgressTracking() {
-  if (progressInterval) {
-    clearInterval(progressInterval);
-    progressInterval = null;
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
   }
 }
 
